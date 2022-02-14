@@ -6,7 +6,41 @@
  * @LastEditTime: 2022-02-12 21:29:26
  */
 module.exports = {
-  title: 'Hello VuePress',
-  description: 'Just playing around',
+  title: `hudk's blog`,
+  description: `hudk's blog`,
   base: '/blog/',
+  themeConfig: {
+    sidebar: [
+      {
+        title: '框架',
+        // path: '/framework',
+        collapsable: true,
+        children: [
+          {
+            title: '后端',
+            collapsable: true,
+            // path: '/framework/backend',
+            children: [
+              {
+                title: 'adonisjs',
+                // path: '/framework/backend/adonis',
+                collapsable: true,
+                children: [
+                  {
+                    title: 'cli & ignitor',
+                    path: '/framework/backend/adonis/cli',
+                  }
+                ],
+              }
+            ],
+          }
+        ],
+      },
+      {
+        title: '',
+        path: '/',
+        collapsable: true,
+      },
+    ],
+  }
 }
