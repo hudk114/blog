@@ -1,7 +1,7 @@
 # 1. cli&启动
+[TOC]
 
-
-入口
+## 入口
 基本上，看一个项目的入口，一定是看其package.json
 
 我们看一下hello-world的package.json
@@ -9,19 +9,18 @@
 
 
 可以看到，框架的入口有两个：
-
-调试，采用dev，框架提供了一个ace的文件来实现其cli能力
-正式，采用start，使用ts编译后的版本
+1. 调试，采用dev，框架提供了一个ace的文件来实现其cli能力
+1. 正式，采用start，使用ts编译后的版本
 我们从dev开始看起
 
-ace
+## ace
 hello-world/ace
 
 
 
 看一下结构，很简单，实际上将ace之后的内容作为参数，传入到Ignitor中
 
-Ignitor
+### Ignitor
 core/standalone.ts
 
 core/src/Ignitor/index.ts
@@ -32,7 +31,7 @@ core/src/Ignitor/index.ts
 
 可以看到，这里作为工厂函数创建了一个Ace的实例
 
-Ace
+### Ace
 core/src/Ignitor/Ace/index.ts
 
 
@@ -43,14 +42,14 @@ Ace的外层会根据传入的命令做一个预处理，如果是为了生成ma
 
 我们先看正常链路的执行过程
 
-App(core中真正调用kernel的地方)
+### App(core中真正调用kernel的地方)
 core/src/Ignitor/Ace/App/index.ts
 
 App层是ace真正的application（应用管理层），内核的管理和命令的执行在这里进行
 
 其中，用于处理命令的hanlde大概分两步：
 
-加载manifest
+#### 加载manifest
 
 
 加载部分，比较简单，其中addKernelHooks有比较重要的额外作用，算是对用户编写的插件提供了一些语法糖和附加功能
@@ -61,19 +60,19 @@ App层是ace真正的application（应用管理层），内核的管理和命令
 
 
 
-查找并执行命令
+#### 查找并执行命令
 
 
 可以看到，这里调用了kernel的实例来处理command
 
-Kernel
+### Kernel
 ace/src/Kernel/index.ts
 
 Kernel实际上就是命令行的处理类实例，内部管理了一条命令（比如，node ace xxxxx就是一条命令）的完整执行流程及生命周期
 
 Kernel提供了一系列类似flag，getSuggestions的方法用于辅助，此处我们只从最核心的handle方法跟踪进入看起
 
-handle
+#### handle
 
 
 handle分为三个分支，前两个分支处理了 没有参数情况下的基础命令 和 带flag（比如说help）的命令情况，比较简单
@@ -84,7 +83,7 @@ handle分为三个分支，前两个分支处理了 没有参数情况下的基�
 
 从逻辑上来说，这里是我们正式执行命令的最终逻辑分支，这里也是被抽成了一个独立函数
 
-execMain
+#### execMain
 
 
 逻辑也比较清晰，查找 → 实例化 → （前置+钩子） →  执行
@@ -95,7 +94,7 @@ execMain
 
 执行：执行了command的exec方法，内部实际上也是通过ioc来做的，这里也不再展开了
 
-Serve Command
+#### Serve Command
 以node ace serve为例，commandName为serve，其寻址实际是通过assembler下的ace-manifest.json来寻址的，寻址这块在manifest中详细介绍
 
 
@@ -116,14 +115,14 @@ Serve Command
 
 我们再来看下server.ts这条链路究竟做了什么
 
-Serve
+## Serve
 hello-world/server.ts
 
 
 
 可以看到，此时走的是点火器的httpServer部分
 
-Ignitor.httpServer
+### Ignitor.httpServer
 
 
 内容很简单，启动了application和server，并且注册了相应的listener处理错误
