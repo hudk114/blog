@@ -3,6 +3,7 @@
     "dev": "vuepress dev docs",
     "start": "npm run dev",
     "build": "vuepress build docs",
+    "build-test": "vuepress build",
     "deploy": "sh deploy.sh"
   },
   "devDependencies": {
