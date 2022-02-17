@@ -7,19 +7,72 @@
 ## ace-manifest
 hello-world/ace-manifest.json
 
-
+``` json
+{
+  "commands": {
+    ...
+    "repl": {
+      "settings": {
+        "loadApp": false,
+        "environment": "repl",
+        "stayAlive": true
+      },
+      "commandPath": "@adonisjs/repl/build/commands/AdonisRepl",
+      "commandName": "repl",
+      "description": "Start a new REPL session",
+      "args": [],
+      "aliases": [],
+      "flags": []
+    }
+    ...
+  }
+}
+```
 
 配置文件的内容还是很清晰的，对于每个command，核心的几个属性主要是：
-
-commandName与commandPath，用于 实例化 特定名称的command
-setting，指定相应的配置，实现对command的一些预处理
+1. commandName与commandPath，用于 实例化 特定名称的command
+1. setting，指定相应的配置，实现对command的一些预处理
 
 ## Command实例化
 command实例化的具体内容包含两部分，首先是根据manifest定位到对应的command，然后根据command名称定位到相应的类（import文件）并实例化，这个流程是在Ace中管理并进行的
 
 ### manifest加载
 core/src/Ignitor/Ace/App/index.ts
+``` js {3,9-12}
+// line 271
+this.kernel.useManifest(
+  new ManifestLoader(this.getAssemblerManifest().concat(this.getAppManifest()))
+)
 
+// line 227
+private getAssemblerManifest() {
+  try {
+    const manifestAbsPath = resolveFrom(
+      this.application.appRoot,
+      '@adonisjs/assembler/build/ace-manifest.json'
+    )
+    const basePath = join(manifestAbsPath, '../')
+    return [
+      {
+        manifestAbsPath,
+        basePath,
+      },
+    ]
+  } catch (error) {
+    return []
+  }
+}
+```
+
+@adonisjs/assembler/ace-manifest.json
+``` json
+"serve": {
+  ...
+  "commandPath": "./commands/Serve",
+  "commandName": "serve",
+  ...
+}
+```
 
 
 我们回看manifest的加载流程，这里以官方命令为例，可以看到，在加载中首先解析了@adonis/assembler提供的ace-manifest文件，并将其通过ManifestLoader进行加载
@@ -29,7 +82,24 @@ core/src/Ignitor/Ace/App/index.ts
 ### 定位
 前文提过，定位的部分在Kernel的find中，我们来看下代码
 
+ace\src\Kernel\index.ts
+``` js
+// line 445
+const commandNode = this.manifestLoader
+  ? this.manifestLoader.hasCommand(commandName)
+    ? this.manifestLoader.getCommand(commandName)
+    : this.manifestLoader.hasCommand(aliasCommandName)
+    ? this.manifestLoader.getCommand(aliasCommandName)
+    : undefined
+  : undefined
 
+if (commandNode) {
+  await this.hooks.execute('before', 'find', commandNode.command)
+  const command = await this.manifestLoader.loadCommand(commandNode.command.commandName)
+  await this.hooks.execute('after', 'find', command)
+  return command
+} else { ... }
+```
 
 可以看到使用ManifestLoader进行了find和load
 

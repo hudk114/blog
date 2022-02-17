@@ -13,61 +13,56 @@ module.exports = {
     sidebar: [
       {
         title: '框架',
-        // path: '/framework',
-        collapsable: true,
+        collapsable: false,
         children: [
           {
             title: '后端',
-            collapsable: true,
-            // path: '/framework/backend',
             children: [
               {
                 title: 'adonisjs',
-                // path: '/framework/backend/adonis',
-                collapsable: true,
                 children: [
                   {
-                    title: 'cli & ignitor',
+                    title: '1. cli & ignitor',
                     path: '/framework/backend/adonis/cli/index',
                     children: [
                       {
-                        title: 'manifest',
+                        title: '1.1 manifest',
                         path: '/framework/backend/adonis/cli/manifest',
                       },
                     ]
                   },
                   {
-                    title: 'application',
+                    title: '2. application',
                     path: '/framework/backend/adonis/application/index',
                     children: [
                       {
-                        title: 'IOC',
+                        title: '2.1 IOC',
                         path: '/framework/backend/adonis/application/IOC',
                       },
                       {
-                        title: 'provider加载',
+                        title: '2.2 provider加载',
                         path: '/framework/backend/adonis/application/load-provider',
                       },
                     ]
                   },
                   {
-                    title: 'http server',
+                    title: '3. http server',
                     path: '/framework/backend/adonis/server/index',
                     children: [
                       {
-                        title: '请求处理流',
+                        title: '3.1 请求处理流',
                         path: '/framework/backend/adonis/server/request-handler',
                       },
                       {
-                        title: 'hook与middleware',
+                        title: '3.2 hook与middleware',
                         path: '/framework/backend/adonis/server/hook-middleware',
                       },
                       {
-                        title: 'co-compose',
+                        title: '3.3 co-compose',
                         path: '/framework/backend/adonis/server/co-compose',
                       },
                       {
-                        title: '静态文件处理',
+                        title: '3.4 静态文件处理',
                         path: '/framework/backend/adonis/server/serve-static',
                       },
                     ]
@@ -78,11 +73,11 @@ module.exports = {
           }
         ],
       },
-      {
-        title: '',
-        path: '/',
-        collapsable: true,
-      },
+      // {
+      //   title: '',
+      //   path: '/',
+      //   collapsable: true,
+      // },
     ],
   }
 }

@@ -1,9 +1,9 @@
 {
   "scripts": {
-    "dev": "vuepress dev docs",
+    "config": "cp -f config.js docs/.vuepress",
+    "dev": "npm run config & vuepress dev docs",
     "start": "npm run dev",
-    "build": "vuepress build docs",
-    "build-test": "vuepress build",
+    "build": "npm run config & vuepress build docs",
     "deploy": "sh deploy.sh"
   },
   "devDependencies": {
