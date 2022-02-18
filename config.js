@@ -40,9 +40,13 @@ module.exports = {
                         path: '/framework/backend/adonis/application/IOC',
                       },
                       {
-                        title: '2.2 provider加载',
+                        title: '2.2 provider的加载过程',
                         path: '/framework/backend/adonis/application/load-provider',
                       },
+                      // {
+                      //   title: '2.3 IOC注入',
+                      //   path: '/framework/backend/adonis/application/get-provider',
+                      // },
                     ]
                   },
                   {

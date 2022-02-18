@@ -1,7 +1,5 @@
 # 1.1 manifest
 
-[TOC]
-
 前文说过，command支持的命令是通过ace-manifest.json文件来定义的，本文将详细介绍一下该文件
 
 ## ace-manifest
@@ -13,7 +11,7 @@ hello-world/ace-manifest.json
     ...
     "repl": {
       "settings": {
-        "loadApp": false,
+        "loadApp": true,
         "environment": "repl",
         "stayAlive": true
       },
@@ -101,13 +99,41 @@ if (commandNode) {
 } else { ... }
 ```
 
-可以看到使用ManifestLoader进行了find和load
+可以看到使用ManifestLoader进行了get和load
 
+``` js {4}
+public getCommand(
+  commandName: string
+): { basePath: string; command: ManifestCommand } | undefined {
+  const manifestCommands = this.getCommandManifest(commandName)
 
+  const aliasCommandName = manifestCommands.aliases[commandName]
+  return {
+    basePath: manifestCommands.basePath,
+    // 这里返回了ace-manifest里的command对象
+    command:
+      manifestCommands.commands[commandName] || manifestCommands.commands[aliasCommandName],
+  }
+}
 
-在find里返回了对应的command对象
+private getCommandManifest(commandName: string) {
+  return this.manifestFiles.find(({ commands, aliases }) => {
+    const aliasCommandName = aliases[commandName]
+    return commands[commandName] || commands[aliasCommandName]
+  })
+}
+```
 
+get中返回了commandName对应的command对象
 
+``` js {3}
+public async loadCommand(commandName: string): Promise<CommandConstructorContract> {
+  const { basePath, command } = this.getCommand(commandName)!
+  const commandConstructor = esmRequire(resolveFrom(basePath, command.commandPath))
+  validateCommand(commandConstructor)
+  return commandConstructor
+}
+```
 
 esmRequire是为了支持babel打包的import，简单来说可以简单的理解为require
 
@@ -115,6 +141,7 @@ esmRequire是为了支持babel打包的import，简单来说可以简单的理�
 
 ### 实例化
 
+![exec-main](./img/exec-main.png)
 
 掏出前文的图，实例化是通过ioc来做的，可以看到，这里的command实际上已经是对应的Constructor了，我们仔细看下makeAsync做了什么
 
@@ -123,11 +150,23 @@ fold\src\Ioc\index.ts
 
 fold\src\Ioc\Injector.ts
 
+``` js {6-12}
+public async makeAsync(target: any, runtimeValues: any[]) {
+  if (!this.isNewable(target)) {
+    return target
+  }
 
+  return new target(
+    ...(await this.resolveAsync(
+      target.name,
+      this.getInjections(target, 'instance'),
+      runtimeValues
+    ))
+  )
+}
+```
 
 一路跟进去，可以看到，实际就是通过target实例化了一个新的类
-
-可以看到，通过这种方式，
 
 ## Command预处理
 在command中，还有一个重要的组成部分是Setting
@@ -137,7 +176,7 @@ fold\src\Ioc\Injector.ts
 ### ioc预处理
 对应setting.loadApp，先看下其使用，就能更好的理解他的使用场景了
 
-
+![ioc预处理](./img/ioc-preprocess.png)
 
 可以看到，loadApp是在command被load（真正的被require进来之前）使用的
 
@@ -146,7 +185,20 @@ fold\src\Ioc\Injector.ts
 ### wire
 core\src\Ignitor\Ace\App\index.ts
 
+``` js {8-11}
+private async wire() {
+  if (this.wired) {
+    return
+  }
 
+  this.wired = true
+
+  await this.application.setup()
+  await this.application.registerProviders()
+  await this.application.bootProviders()
+  await this.application.requirePreloads()
+}
+```
 
 可以看到，做的事情就是加载了application（实际上，是加载了application里的provider）
 
@@ -155,16 +207,24 @@ core\src\Ignitor\Ace\App\index.ts
 ### 验证
 以开头的repl命令为例，可以看到，repl需要使用loadApp
 
-
+``` json {3}
+"repl": {
+  "settings": {
+    "loadApp": true,
+    "environment": "repl",
+    "stayAlive": true
+  },
+  "commandPath": "@adonisjs/repl/build/commands/AdonisRepl",
+  "commandName": "repl",
+  "description": "Start a new REPL session",
+  "args": [],
+  "aliases": [],
+  "flags": []
+}
+```
 
 说明repl里使用了ioc
 
 如果我们将loadApp去掉，那么执行node ace repl一定会报错
 
-
-
-
-
-## 自定义command
-todo basecommand
-
+![repl报错](./img/repl-error.png)
